@@ -14,6 +14,7 @@ A modern Snake game built with pure HTML5 Canvas and Web Audio API.
 - Combo system — eat food in a row for bonus points
 - Gold food ⭐, bonus items 🛡⚡❄💣
 - Online leaderboard
+- Sign in with Telegram or email — save progress and sync across devices
 - Responsive design — works on mobile, tablet, and desktop
 - Touch controls (swipe or on-screen D-pad) + keyboard support
 
