@@ -2565,7 +2565,9 @@ function buildShopPreview(){
   // player_id. Starting it now would write under a throwaway anonymous id and
   // spawn a duplicate "Аноним" row (and pre-claim localStorage pid, which broke
   // the CloudStorage identity fallback). Web users have no auth step → start now.
-  const isTG = !!(window.Telegram?.WebApp?.initData);
+  // Robust Telegram detection: some clients leave initData (raw signed string)
+  // empty while still populating initDataUnsafe.user — treat either as Telegram.
+  const isTG = !!(window.Telegram?.WebApp?.initData || window.Telegram?.WebApp?.initDataUnsafe?.user);
   if(!isTG) startHeartbeat();
   document.addEventListener('visibilitychange',()=>{
     if(document.hidden){
@@ -2853,7 +2855,11 @@ function buildShopPreview(){
   }
   function updateAcctCard(){
     const card=_am('acctCard'); if(!card) return; const L=_aL();
-    if(isTG){ card.style.display='none'; return; }
+    const isEmailUser=localStorage.getItem(S+'emailLinked')==='1';
+    // Telegram users are represented by the Telegram profile card above — the
+    // email account card is only for web (guests + email accounts). Hide it for
+    // anyone in Telegram or already Telegram-linked (unless they use email).
+    if((isTG || localStorage.getItem(S+'tgLinked')==='1') && !isEmailUser){ card.style.display='none'; return; }
     card.style.display='';
     const lbl=_am('acctLbl'); if(lbl) lbl.textContent=L.acctLbl;
     const hint=_am('acctGuestHint'); if(hint) hint.textContent=L.acctHint;
