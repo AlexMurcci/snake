@@ -83,7 +83,9 @@ body{
   min-height:var(--tg-vh,100dvh);
   min-height:var(--tg-vh,100vh);
   min-height:-webkit-fill-available;
-  overflow-y:auto;overflow-x:hidden;
+  max-height:var(--tg-vh,100dvh);
+  max-height:var(--tg-vh,100vh);
+  overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
   padding:10px 0 calc(90px + env(safe-area-inset-bottom, 18px));
   background:var(--bg);
 }
@@ -922,8 +924,8 @@ canvas{
         <span style="font-size:1.2rem">✈️</span>
       </div>
     </div>
-    <!-- Account (email login / status) — web only, hidden in Telegram -->
-    <div class="sett-card" id="acctCard">
+    <!-- Account (email login / status) — web only, hidden in Telegram (shown by updateAcctCard) -->
+    <div class="sett-card" id="acctCard" style="display:none">
       <div class="sett-label" id="acctLbl">🔑 Account</div>
       <div id="acctGuest">
         <div style="font-size:.78rem;color:var(--text2);margin-bottom:8px" id="acctGuestHint">Log in to save progress & join the leaderboard from any device.</div>
