@@ -2594,7 +2594,16 @@ function buildShopPreview(){
     try{ tg.ready(); }catch(_){}
     try{ tg.expand(); }catch(_){}
     try{ tg.disableVerticalSwipes&&tg.disableVerticalSwipes(); }catch(_){} // no accidental minimize while playing
-    try{ tg.requestFullscreen&&tg.requestFullscreen(); }catch(_){}         // Bot API 8.0+; no-op on older clients
+    // True fullscreen (Bot API 8.0+). Guard by version and retry once — some
+    // clients ignore a requestFullscreen() made too early during init.
+    const _goFs=()=>{ try{
+      if(typeof tg.requestFullscreen==='function'
+         && (!tg.isVersionAtLeast || tg.isVersionAtLeast('8.0'))
+         && !tg.isFullscreen){ tg.requestFullscreen(); }
+    }catch(_){} };
+    _goFs();
+    setTimeout(_goFs,400);
+    try{ tg.onEvent('fullscreenFailed',()=>{}); }catch(_){}
     // Keep viewport height + top safe-area inset in CSS vars, so content never
     // hides behind Telegram's floating controls when in fullscreen.
     const applyTgViewport=()=>{
