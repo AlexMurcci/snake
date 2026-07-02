@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- build: fullscreen + tg-detect (redeploy) -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -44,7 +43,6 @@
   --canvas-bg:#0d0d0d;
   --canvas-border:#252525;
   --transition:background .25s,color .25s,border-color .25s;
-  --tg-top:0px; /* Telegram fullscreen top safe-area inset (0 on web) */
 }
 /* ── Auth modal (email login/register) ── */
 #authModal{display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.78);align-items:center;justify-content:center;padding:20px;}
@@ -88,7 +86,7 @@ body{
   max-height:var(--tg-vh,100dvh);
   max-height:var(--tg-vh,100vh);
   overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
-  padding:calc(10px + var(--tg-top,0px)) 0 calc(90px + env(safe-area-inset-bottom, 18px));
+  padding:10px 0 calc(90px + env(safe-area-inset-bottom, 18px));
   background:var(--bg);
 }
 .screen.active{display:flex;}
@@ -2587,43 +2585,22 @@ function buildShopPreview(){
 
   // ── TELEGRAM MINI APP AUTH ──────────────────────────────────────────
   const tg=window.Telegram?.WebApp;
-  // ── Telegram UI: fullscreen + expand + viewport ──
-  // Runs for ANY Telegram client (even ones that leave initData empty), so the
-  // Mini App always opens full-size. Auth (below) still requires initData.
-  if(tg){
-    try{ tg.ready(); }catch(_){}
+  if(tg?.initData){
     try{ tg.expand(); }catch(_){}
-    try{ tg.disableVerticalSwipes&&tg.disableVerticalSwipes(); }catch(_){} // no accidental minimize while playing
-    // True fullscreen (Bot API 8.0+). Guard by version and retry once — some
-    // clients ignore a requestFullscreen() made too early during init.
-    const _goFs=()=>{ try{
-      if(typeof tg.requestFullscreen==='function'
-         && (!tg.isVersionAtLeast || tg.isVersionAtLeast('8.0'))
-         && !tg.isFullscreen){ tg.requestFullscreen(); }
-    }catch(_){} };
-    _goFs();
-    setTimeout(_goFs,400);
-    try{ tg.onEvent('fullscreenFailed',()=>{}); }catch(_){}
-    // Keep viewport height + top safe-area inset in CSS vars, so content never
-    // hides behind Telegram's floating controls when in fullscreen.
-    const applyTgViewport=()=>{
-      try{
+    // ── Viewport / safe area ──
+    try{
+      const applyTgViewport=()=>{
         const h=tg.viewportStableHeight||tg.viewportHeight||window.innerHeight;
         document.documentElement.style.setProperty('--tg-vh',h+'px');
-        const top=(tg.contentSafeAreaInset?.top||0)+(tg.safeAreaInset?.top||0);
-        document.documentElement.style.setProperty('--tg-top',top+'px');
-      }catch(_){}
-    };
-    applyTgViewport();
-    try{ tg.onEvent('viewportChanged',applyTgViewport); }catch(_){}
-    try{ tg.onEvent('fullscreenChanged',applyTgViewport); }catch(_){}
-    try{ tg.onEvent('safeAreaChanged',applyTgViewport); }catch(_){}
-    try{ tg.onEvent('contentSafeAreaChanged',applyTgViewport); }catch(_){}
+      };
+      applyTgViewport();
+      tg.onEvent('viewportChanged',applyTgViewport);
+    }catch(_){}
     // Apply Telegram theme
     try{
       if(tg.colorScheme==='light') document.documentElement.setAttribute('data-theme','light');
-      tg.setHeaderColor&&tg.setHeaderColor('#0d0d0d');
-      tg.setBackgroundColor&&tg.setBackgroundColor('#0d0d0d');
+      tg.setHeaderColor('#0f172a');
+      tg.setBackgroundColor('#0f172a');
     }catch(_){}
     // BackButton — show when not on menuScreen
     try{
@@ -2636,8 +2613,6 @@ function buildShopPreview(){
         }
       });
     }catch(_){}
-  }
-  if(tg?.initData){
     // Retry auth a few times — a transient failure used to drop the user onto a
     // throwaway anonymous player_id (duplicate "Аноним" rows + lost progress).
     for(let _attempt=0; _attempt<3; _attempt++){
