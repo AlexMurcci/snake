@@ -652,8 +652,8 @@ canvas{
     <div class="auth-title" id="authTitle">Log in</div>
     <div class="auth-tgwrap" id="authTgWrap"></div>
     <div class="auth-or" id="authOr">— or with email —</div>
-    <input id="authEmail" type="email" placeholder="Email" autocomplete="email" autocapitalize="off" spellcheck="false">
-    <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+    <input id="authEmail" type="email" placeholder="Email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" lang="en" inputmode="email">
+    <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" lang="en">
     <input id="authNick" type="text" maxlength="16" placeholder="Nickname" autocomplete="off" spellcheck="false" style="display:none">
     <div class="auth-err" id="authErr"></div>
     <button id="authSubmit" type="button">Log in</button>
@@ -2829,10 +2829,14 @@ function buildShopPreview(){
   function closeAuthModal(){ _am('authModal').style.display='none'; }
   async function submitEmailAuth(){
     const L=_aL(); const err=_am('authErr');
-    const email=(_am('authEmail').value||'').trim();
+    const email=(_am('authEmail').value||'').trim().toLowerCase();
     const password=_am('authPassword').value||'';
     const nick=(_am('authNick').value||'').trim();
     if(!email||!password){ err.textContent=L.e_fields; return; }
+    // Strict email check (ASCII, single dots, valid TLD) — matches the server.
+    const emailOk=/^[a-z0-9]+(?:[._%+\-][a-z0-9]+)*@[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*)*\.[a-z]{2,}$/.test(email);
+    if(!emailOk){ err.textContent=L.e_invalid_email; return; }
+    if(_authMode==='register'&&password.length<6){ err.textContent=L.e_weak_password; return; }
     const btn=_am('authSubmit'); btn.disabled=true;
     try{
       const payload={action:_authMode,email,password};
@@ -2871,6 +2875,16 @@ function buildShopPreview(){
     on('authSwitchLink','click',()=>setAuthMode(_authMode==='login'?'register':'login'));
     on('authModal','click',e=>{ if(e.target===_am('authModal')) closeAuthModal(); });
     on('authPassword','keydown',e=>{ if(e.key==='Enter') submitEmailAuth(); });
+    // Email & password: Latin/ASCII only — strip anything else as it is typed
+    // (Cyrillic, emoji, etc.). Nick and other fields stay multilingual.
+    const _stripEmail=v=>v.replace(/[^A-Za-z0-9@._%+\-]/g,'');
+    const _stripPass =v=>v.replace(/[^\x21-\x7E]/g,''); // printable ASCII, no spaces
+    const filterInput=(id,fn)=>{ const el=_am(id); if(!el) return;
+      el.addEventListener('input',()=>{ const s=el.selectionStart, before=el.value, after=fn(before);
+        if(after!==before){ el.value=after; try{ el.setSelectionRange(s-1,s-1); }catch(_){} } });
+    };
+    filterInput('authEmail',_stripEmail);
+    filterInput('authPassword',_stripPass);
     const wb=_am('welcAuthBtn'); if(wb) wb.textContent=_aL().welcBtn;
   })();
   window.openAuthModal=openAuthModal; window.updateAcctCard=updateAcctCard; window.snakeLogout=snakeLogout;
