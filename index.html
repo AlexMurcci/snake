@@ -2592,14 +2592,17 @@ function buildShopPreview(){
     try{ tg.ready(); }catch(_){}
     try{ tg.expand(); }catch(_){}
     try{ tg.disableVerticalSwipes&&tg.disableVerticalSwipes(); }catch(_){}
-    // True fullscreen (Bot API 8.0+); version-guarded, retried once (some clients
-    // ignore a call made too early). No-op on older clients.
+    // True fullscreen ONLY on mobile (iOS/Android). On desktop/macOS/web the
+    // Mini App stays a normal window — fullscreen there is unwanted. Bot API 8.0+,
+    // version-guarded, retried once (some clients ignore a too-early call).
+    const _isMobileTG=/^(ios|android)$/i.test(tg.platform||'');
     const _goFs=()=>{ try{
-      if(typeof tg.requestFullscreen==='function'
+      if(_isMobileTG
+         && typeof tg.requestFullscreen==='function'
          && (!tg.isVersionAtLeast || tg.isVersionAtLeast('8.0'))
          && !tg.isFullscreen){ tg.requestFullscreen(); }
     }catch(_){} };
-    _goFs(); setTimeout(_goFs,400);
+    if(_isMobileTG){ _goFs(); setTimeout(_goFs,400); }
     try{ tg.onEvent('fullscreenFailed',()=>{}); }catch(_){}
     // Viewport height + top safe-area inset → CSS vars. Guard against transient
     // bad values (0 / tiny) during the fullscreen transition so the layout
