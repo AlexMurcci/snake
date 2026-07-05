@@ -2144,6 +2144,32 @@ async function submitToLeaderboard(name,score,level,mode){
 }
 
 function escHtml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+// In-game announcement: shown as a dismissible modal to EVERY player who opens
+// the game (reaches everyone regardless of bot status). Admin posts it in the panel.
+async function showAnnouncement(){
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/rpc/get_announcement',{method:'POST',headers:SB_HEADERS,body:'{}',signal:AbortSignal.timeout?.(5000)});
+    if(!r.ok) return;
+    const a=await r.json();
+    if(!a||!a.text) return;
+    const seen=Number(localStorage.getItem('snake2_ann_seen')||0);
+    if(a.at && a.at<=seen) return;              // already dismissed this one
+    if(document.getElementById('annOverlay')) return;
+    const ov=document.createElement('div'); ov.id='annOverlay';
+    ov.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:22px;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)';
+    const box=document.createElement('div');
+    box.style.cssText='background:#14142a;border:1px solid #33335a;border-radius:18px;max-width:420px;width:100%;padding:22px 22px 18px;box-shadow:0 24px 70px rgba(0,0,0,.55)';
+    const h=document.createElement('div'); h.textContent='📢 Объявление';
+    h.style.cssText='font-size:1.12rem;font-weight:800;margin-bottom:12px;color:#a78bfa';
+    const body=document.createElement('div'); body.textContent=a.text;
+    body.style.cssText='font-size:.96rem;line-height:1.55;color:#e8e8f2;white-space:pre-wrap;word-break:break-word;max-height:50vh;overflow:auto';
+    const btn=document.createElement('button'); btn.textContent='Понятно 👍';
+    btn.style.cssText='margin-top:18px;width:100%;padding:13px;border:none;border-radius:11px;background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;font-weight:800;font-size:.98rem;cursor:pointer';
+    btn.onclick=()=>{ try{localStorage.setItem('snake2_ann_seen',String(a.at||Math.floor(Date.now()/1000)));}catch(_){} ov.remove(); try{window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('soft');}catch(_){}};
+    box.appendChild(h); box.appendChild(body); box.appendChild(btn); ov.appendChild(box); document.body.appendChild(ov);
+  }catch(_){}
+}
+window.addEventListener('load',()=>setTimeout(showAnnouncement,3000));
 
 function switchLbTab(tab){
   document.getElementById('tabMy').classList.toggle('active',tab==='my');
@@ -2604,6 +2630,19 @@ function buildShopPreview(){
     }catch(_){} };
     if(_isMobileTG){ _goFs(); setTimeout(_goFs,400); }
     try{ tg.onEvent('fullscreenFailed',()=>{}); }catch(_){}
+    // Ask permission for the bot to message the player (daily quests, announcements).
+    // Telegram shows a native consent popup; once allowed the bot can DM them even
+    // without a manual /start — this is what makes broadcasts reach everyone.
+    // Asked once per device, and skipped if already allowed. Delayed so it doesn't
+    // stack on top of the fullscreen prompt.
+    try{
+      const _wa=tg.initDataUnsafe?.user?.allows_write_to_pm;
+      if(!_wa && typeof tg.requestWriteAccess==='function'
+         && (!tg.isVersionAtLeast || tg.isVersionAtLeast('6.9'))
+         && !localStorage.getItem('snake2_wa_asked')){
+        setTimeout(()=>{ try{ tg.requestWriteAccess(()=>{ try{localStorage.setItem('snake2_wa_asked','1');}catch(_){} }); }catch(_){} }, 1600);
+      }
+    }catch(_){}
     // Viewport height + top safe-area inset → CSS vars. Guard against transient
     // bad values (0 / tiny) during the fullscreen transition so the layout
     // never collapses.
