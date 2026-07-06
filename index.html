@@ -2162,11 +2162,13 @@ async function showAnnouncement(){
     ov.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:22px;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)';
     const box=document.createElement('div');
     box.style.cssText='background:#14142a;border:1px solid #33335a;border-radius:18px;max-width:420px;width:100%;padding:22px 22px 18px;box-shadow:0 24px 70px rgba(0,0,0,.55)';
-    const h=document.createElement('div'); h.textContent='📢 Объявление';
+    const _annT={en:'📢 Announcement',ru:'📢 Объявление',uk:'📢 Оголошення',pl:'📢 Ogłoszenie',sk:'📢 Oznámenie'};
+    const _annB={en:'Got it 👍',ru:'Понятно 👍',uk:'Зрозуміло 👍',pl:'Rozumiem 👍',sk:'Rozumiem 👍'};
+    const h=document.createElement('div'); h.textContent=_annT[_lang]||_annT.en;
     h.style.cssText='font-size:1.12rem;font-weight:800;margin-bottom:12px;color:#a78bfa';
     const body=document.createElement('div'); body.textContent=a.text;
     body.style.cssText='font-size:.96rem;line-height:1.55;color:#e8e8f2;white-space:pre-wrap;word-break:break-word;max-height:50vh;overflow:auto';
-    const btn=document.createElement('button'); btn.textContent='Понятно 👍';
+    const btn=document.createElement('button'); btn.textContent=_annB[_lang]||_annB.en;
     btn.style.cssText='margin-top:18px;width:100%;padding:13px;border:none;border-radius:11px;background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;font-weight:800;font-size:.98rem;cursor:pointer';
     btn.onclick=()=>{ try{localStorage.setItem('snake2_ann_seen',String(a.at||Math.floor(Date.now()/1000)));}catch(_){} ov.remove(); try{window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('soft');}catch(_){}};
     box.appendChild(h); box.appendChild(body); box.appendChild(btn); ov.appendChild(box); document.body.appendChild(ov);
