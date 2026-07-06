@@ -1765,7 +1765,9 @@ async function fetchModeBests(pid){
   }catch(e){}
 }
 
+let serverModRev = 0; // last moderation revision seen from server
 function applyProfile(row){
+  serverModRev = row.mod_rev||0;
   lbNickname   = row.nick||'';
   coins        = row.coins||0;
   best         = row.best||0;
@@ -2606,6 +2608,8 @@ function buildShopPreview(){
     }else{
       // Foreground again → resume heartbeat (its immediate tick re-marks online).
       startHeartbeat();
+      // Pull in any admin moderation that happened while we were backgrounded.
+      reconcileProfile();
     }
   });
   // Tab/app close → mark offline (keepalive lets it land) + persist progress.
@@ -2990,6 +2994,27 @@ function buildShopPreview(){
     }).catch(()=>{});
   }
   function heartbeat(){ setOnline(true); }
+
+  // Adopt admin moderation without clobbering honest local progress.
+  // Only re-applies the server profile when its mod_rev advanced (i.e. an
+  // admin actually changed coins / reset a record / renamed the player).
+  // Regular play never triggers this, so in-game earnings are never reverted.
+  function reconcileProfile(){
+    if(!cloudEnabled) return;
+    const pid=getPlayerId();
+    if(!pid) return;
+    fetch(`${SB_URL}/rest/v1/rpc/get_my_profile`,{
+      method:'POST',headers:{...SB_HEADERS,'Content-Type':'application/json'},
+      body:JSON.stringify({p_player_id:pid}),signal:AbortSignal.timeout?.(6000)
+    }).then(r=>r.ok?r.json():null).then(row=>{
+      if(!row) return;
+      if((row.mod_rev||0) > serverModRev){
+        applyProfile(row);       // server wins after a moderation event
+        fetchModeBests(pid);     // refresh per-mode bests (record reset)
+        if(typeof refreshMenuUI==='function') refreshMenuUI();
+      }
+    }).catch(()=>{});
+  }
 
   try{
     const pid=getPlayerId();
