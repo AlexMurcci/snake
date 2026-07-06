@@ -2150,7 +2150,7 @@ function escHtml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt
 // the game (reaches everyone regardless of bot status). Admin posts it in the panel.
 async function showAnnouncement(){
   try{
-    const _lang=(typeof currentLang!=='undefined'&&currentLang)||localStorage.getItem(S+'Lang')||'ru';
+    const _lang=(typeof currentLang!=='undefined'&&currentLang)||localStorage.getItem(S+'Lang')||'en';
     const r=await fetch(SB_URL+'/rest/v1/rpc/get_announcement',{method:'POST',headers:SB_HEADERS,body:JSON.stringify({p_lang:_lang}),signal:AbortSignal.timeout?.(5000)});
     if(!r.ok) return;
     const a=await r.json();
