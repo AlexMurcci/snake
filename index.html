@@ -2273,6 +2273,34 @@ async function _subCheck(claim){
     return await r.json();
   }catch(_){ return null; }
 }
+// Crawl the hero snake along its path: the body is a dashed segment whose front
+// edge is kept exactly under the head, so both move as one. Stops with the sheet.
+function _subCrawl(hero){
+  try{
+    const path=hero.querySelector('#subPath'), head=hero.querySelector('#subHead');
+    if(!path||!head) return;
+    const len=path.getTotalLength(); if(!len) return;
+    const body=len*0.36, DUR=8200;
+    path.style.strokeDasharray=body+' '+(len*2);
+    const place=k=>{
+      const at=k*len;
+      path.style.strokeDashoffset=(body-at);
+      const a=path.getPointAtLength(Math.max(0,Math.min(at,len)));
+      const b=path.getPointAtLength(Math.max(0,Math.min(at+1.5,len)));
+      head.setAttribute('transform','translate('+a.x.toFixed(2)+','+a.y.toFixed(2)+') rotate('+
+        (Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI).toFixed(2)+')');
+    };
+    if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){ place(0.62); return; }
+    let t0=null;
+    const frame=ts=>{
+      if(!hero.isConnected) return;             // sheet closed — stop the loop
+      if(t0==null) t0=ts;
+      place(((ts-t0)%DUR)/DUR);
+      requestAnimationFrame(frame);
+    };
+    place(0); requestAnimationFrame(frame);
+  }catch(_){}
+}
 function _subClose(){
   const ov=document.getElementById('subOv'); if(!ov) return;
   const sh=ov.querySelector('.sub-sheet');
@@ -2354,16 +2382,20 @@ async function showSubscribeSheet(){
     '<rect width="340" height="150" fill="url(#subGlow)"/>'+
     // Straight-through line: it enters at the left, runs behind the name plate
     // and comes back out on the right, so the plate reads as pierced by it.
-    '<path d="M-20,86 C74,84 156,74 226,67 C252,64.5 268,64 272,64" fill="none" stroke="#b5f23d" stroke-width="13" stroke-linecap="round"/>'+
-    '<circle cx="278" cy="64" r="11" fill="#b5f23d"/>'+
-    '<circle cx="281" cy="60.5" r="2.5" fill="#0d0d0d"/>'+
-    '<path d="M287,64 l7.5,-3 M287,64 l7.5,3" stroke="#ff5a5a" stroke-width="2.1" stroke-linecap="round" fill="none"/>'+
-    '<circle cx="312" cy="62" r="6.5" fill="#ff5a5a"/>'+
-    '<circle cx="309.5" cy="59.5" r="2" fill="#fff" opacity=".55"/>'+
-    '<circle cx="104" cy="28" r="4.6" fill="#f5c518" opacity=".85"/>'+
-    '<rect x="46" y="118" width="9" height="9" rx="2.5" fill="#b5f23d" opacity=".45"/>'+
-    '<rect x="198" y="126" width="7" height="7" rx="2" fill="#b5f23d" opacity=".3"/>'+
-    '<circle cx="256" cy="24" r="3.2" fill="#b5f23d" opacity=".3"/>'+
+    // Food and pixels sit in the open areas the snake sweeps past.
+    '<circle cx="58" cy="72" r="5" fill="#f5c518" opacity=".9"/>'+
+    '<rect x="34" y="34" width="8" height="8" rx="2.2" fill="#b5f23d" opacity=".32"/>'+
+    '<rect x="150" y="130" width="7" height="7" rx="2" fill="#b5f23d" opacity=".28"/>'+
+    '<circle cx="300" cy="62" r="6.5" fill="#ff5a5a"/>'+
+    '<circle cx="297.5" cy="59.5" r="2" fill="#fff" opacity=".55"/>'+
+    '<circle cx="318" cy="116" r="3.2" fill="#b5f23d" opacity=".28"/>'+
+    // Diagonal run: in from the bottom left, behind the plate, out top right.
+    '<path id="subPath" d="M-42,130 C40,129 102,123 150,108 C186,97 206,70 232,46 C262,27 320,17 382,11" fill="none" stroke="#b5f23d" stroke-width="13" stroke-linecap="round"/>'+
+    '<g id="subHead">'+
+      '<circle cx="0" cy="0" r="11" fill="#b5f23d"/>'+
+      '<circle cx="3" cy="-3.5" r="2.5" fill="#0d0d0d"/>'+
+      '<path d="M6,0 l7.5,-3 M6,0 l7.5,3" stroke="#ff5a5a" stroke-width="2.1" stroke-linecap="round" fill="none"/>'+
+    '</g>'+
   '</svg>';
   const card=document.createElement('div'); card.className='sub-hero-card';
   const badge=document.createElement('div'); badge.className='sub-hero-badge';
@@ -2400,7 +2432,7 @@ async function showSubscribeSheet(){
 
   sheet.appendChild(grab); sheet.appendChild(hero); sheet.appendChild(ttl);
   sheet.appendChild(sub); sheet.appendChild(go); sheet.appendChild(later);
-  ov.appendChild(sheet); document.body.appendChild(ov); _subDrag(ov,sheet);
+  ov.appendChild(sheet); document.body.appendChild(ov); _subDrag(ov,sheet); _subCrawl(hero);
   requestAnimationFrame(()=>ov.classList.add('on'));
 }
 // Show the sheet the moment the loading screen goes away — whichever code path
