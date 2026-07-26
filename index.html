@@ -2352,11 +2352,18 @@ async function showSubscribeSheet(){
     '</defs>'+
     '<rect width="340" height="150" fill="url(#subGrid)" mask="url(#subMask)"/>'+
     '<rect width="340" height="150" fill="url(#subGlow)"/>'+
-    '<path d="M-20,128 L54,128 L54,96 L146,96 L146,60 L242,60 L242,34 L268,34" fill="none" stroke="#b5f23d" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>'+
-    '<circle cx="274" cy="34" r="11" fill="#b5f23d"/>'+
-    '<circle cx="277" cy="30.5" r="2.5" fill="#0d0d0d"/>'+
-    '<path d="M283,34 l7.5,-3 M283,34 l7.5,3" stroke="#ff5a5a" stroke-width="2.1" stroke-linecap="round" fill="none"/>'+
-    '<circle cx="307" cy="34" r="6.5" fill="#ff5a5a"/>'+
+    // Straight-through line: it enters at the left, runs behind the name plate
+    // and comes back out on the right, so the plate reads as pierced by it.
+    '<path d="M-20,86 C74,84 156,74 226,67 C252,64.5 268,64 272,64" fill="none" stroke="#b5f23d" stroke-width="13" stroke-linecap="round"/>'+
+    '<circle cx="278" cy="64" r="11" fill="#b5f23d"/>'+
+    '<circle cx="281" cy="60.5" r="2.5" fill="#0d0d0d"/>'+
+    '<path d="M287,64 l7.5,-3 M287,64 l7.5,3" stroke="#ff5a5a" stroke-width="2.1" stroke-linecap="round" fill="none"/>'+
+    '<circle cx="312" cy="62" r="6.5" fill="#ff5a5a"/>'+
+    '<circle cx="309.5" cy="59.5" r="2" fill="#fff" opacity=".55"/>'+
+    '<circle cx="104" cy="28" r="4.6" fill="#f5c518" opacity=".85"/>'+
+    '<rect x="46" y="118" width="9" height="9" rx="2.5" fill="#b5f23d" opacity=".45"/>'+
+    '<rect x="198" y="126" width="7" height="7" rx="2" fill="#b5f23d" opacity=".3"/>'+
+    '<circle cx="256" cy="24" r="3.2" fill="#b5f23d" opacity=".3"/>'+
   '</svg>';
   const card=document.createElement('div'); card.className='sub-hero-card';
   const badge=document.createElement('div'); badge.className='sub-hero-badge';
