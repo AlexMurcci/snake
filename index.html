@@ -90,7 +90,8 @@
 .sub-hero{position:relative;overflow:hidden;border-radius:18px;background:#151515;border:1px solid var(--border);height:138px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;}
 .sub-hero svg{position:absolute;inset:0;width:100%;height:100%;}
 .sub-hero-card{position:relative;display:flex;align-items:center;gap:12px;background:#1e1e1e;border-radius:16px;padding:9px 20px 9px 9px;box-shadow:0 10px 30px rgba(0,0,0,.45);max-width:86%;}
-.sub-hero-badge{width:46px;height:46px;border-radius:50%;background:#0d0d0d;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;}
+.sub-hero-badge{width:46px;height:46px;border-radius:50%;background:#0d0d0d;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;overflow:hidden;}
+.sub-hero-badge img{width:100%;height:100%;object-fit:cover;display:block;}
 .sub-hero-nm{font-size:1.32rem;font-weight:900;letter-spacing:-.5px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sub-ttl{font-size:1.28rem;font-weight:900;line-height:1.28;margin-bottom:9px;color:var(--text);}
 .sub-ttl span{color:var(--ac);}
@@ -2320,7 +2321,7 @@ async function showSubscribeSheet(){
   _subShown=true;
   const lang=(typeof currentLang!=='undefined'&&currentLang)||localStorage.getItem(S+'Lang')||'en';
   const L=_SUB_T[lang]||_SUB_T.en;
-  const name='@'+String(d.channel||'').replace(/^@/,'');
+  const name=(d.name||'').trim()||('@'+String(d.channel||'').replace(/^@/,''));
   const url=d.url||('https://t.me/'+String(d.channel||'').replace(/^@/,''));
 
   const ov=document.createElement('div'); ov.id='subOv';
@@ -2343,7 +2344,9 @@ async function showSubscribeSheet(){
     '<circle cx="358" cy="104" r="6" fill="#f5c518"/>'+
   '</svg>';
   const card=document.createElement('div'); card.className='sub-hero-card';
-  const badge=document.createElement('div'); badge.className='sub-hero-badge'; badge.textContent='🐍';
+  const badge=document.createElement('div'); badge.className='sub-hero-badge';
+  if(d.avatar){ const im=document.createElement('img'); im.src=d.avatar; im.alt=''; badge.appendChild(im); }
+  else badge.textContent='🐍';
   const hNm=document.createElement('div'); hNm.className='sub-hero-nm'; hNm.textContent=name;
   card.appendChild(badge); card.appendChild(hNm); hero.appendChild(card);
   const ttl=document.createElement('div'); ttl.className='sub-ttl';
