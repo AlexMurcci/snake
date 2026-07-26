@@ -70,11 +70,16 @@
 .ld-logo{display:flex;align-items:center;gap:13px;}
 .ld-ico{font-size:2.4rem;line-height:1;filter:drop-shadow(0 6px 22px var(--ac-glow));}
 .ld-word{font-size:2.4rem;font-weight:900;letter-spacing:-1px;color:var(--text);line-height:1;}
-.ld-bar{width:min(300px,56vw);height:7px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;}
-.ld-bar i{display:block;height:100%;width:38%;border-radius:99px;background:var(--ac);box-shadow:0 0 18px var(--ac-glow);animation:ldrun 1.15s cubic-bezier(.55,0,.45,1) infinite;}
-@keyframes ldrun{0%{transform:translateX(-110%)}100%{transform:translateX(370%)}}
-.ld-foot{position:absolute;left:0;right:0;bottom:0;height:21vh;min-height:140px;background:var(--ac);clip-path:polygon(0 46%,25% 46%,25% 26%,100% 7%,100% 100%,0 100%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));}
-.ld-tag{font-size:.98rem;font-weight:800;color:#0d0d0d;text-align:center;padding:0 18px;}
+/* crawling snake instead of a progress bar */
+.ld-snake{position:relative;width:min(300px,56vw);height:34px;}
+.ld-snake i{position:absolute;top:0;left:0;height:100%;animation:ldx 2s linear infinite;animation-delay:calc((var(--i) - 8) * .055s);}
+.ld-snake i b{position:absolute;top:50%;left:0;width:var(--s);height:var(--s);margin-top:calc(var(--s) / -2);margin-left:calc(var(--s) / -2);border-radius:50%;background:var(--ac);box-shadow:0 0 12px var(--ac-glow);animation:ldy .66s ease-in-out infinite alternate;animation-delay:calc((var(--i) - 8) * .055s);}
+.ld-snake i.hd b::after{content:'';position:absolute;top:3.5px;right:3px;width:3.5px;height:3.5px;border-radius:50%;background:#0d0d0d;}
+@keyframes ldx{from{left:-7%}to{left:107%}}
+@keyframes ldy{from{transform:translateY(-8px)}to{transform:translateY(8px)}}
+.ld-foot{position:absolute;left:0;right:0;bottom:0;height:23vh;min-height:150px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:calc(22px + env(safe-area-inset-bottom,0px));}
+.ld-wave{position:absolute;inset:0;width:100%;height:100%;}
+.ld-tag{position:relative;font-size:.98rem;font-weight:800;color:#0d0d0d;text-align:center;padding:0 18px;}
 /* ── Channel subscribe sheet ── */
 #subOv{position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .22s;}
 #subOv.on{opacity:1;}
@@ -665,9 +670,25 @@ canvas{
 <div id="loadingScreen">
   <div class="ld-mid">
     <div class="ld-logo"><span class="ld-ico">🐍</span><span class="ld-word" id="ldWord">SNAKE</span></div>
-    <div class="ld-bar"><i></i></div>
+    <div class="ld-snake" aria-hidden="true">
+      <i class="hd" style="--i:0"><b style="--s:18px"></b></i>
+      <i style="--i:1"><b style="--s:17px"></b></i>
+      <i style="--i:2"><b style="--s:16px"></b></i>
+      <i style="--i:3"><b style="--s:15px"></b></i>
+      <i style="--i:4"><b style="--s:14px"></b></i>
+      <i style="--i:5"><b style="--s:12.5px"></b></i>
+      <i style="--i:6"><b style="--s:11px"></b></i>
+      <i style="--i:7"><b style="--s:9.5px"></b></i>
+      <i style="--i:8"><b style="--s:8px"></b></i>
+    </div>
   </div>
-  <div class="ld-foot"><div class="ld-tag" id="ldTag">Play · Compete · Win</div></div>
+  <div class="ld-foot">
+    <svg class="ld-wave" viewBox="0 0 400 130" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,58 C74,58 84,20 168,20 C248,20 258,60 338,60 C368,60 386,46 400,38 L400,130 L0,130 Z" fill="#8fbf2f" opacity=".55"/>
+      <path d="M0,72 C74,72 84,34 168,34 C248,34 258,74 338,74 C368,74 386,60 400,52 L400,130 L0,130 Z" fill="#b5f23d"/>
+    </svg>
+    <div class="ld-tag" id="ldTag">Play · Compete · Win</div>
+  </div>
 </div>
 <div id="unlockNotif"></div>
 <!-- WELCOME SCREEN (first launch) -->
