@@ -599,6 +599,15 @@ canvas{
   padding:14px 16px;display:flex;flex-direction:column;gap:10px;
 }
 .sett-label{font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;}
+/* ── Referral card ── */
+.ref-hint{font-size:.78rem;color:var(--text2);line-height:1.45;margin:6px 0 10px;}
+.ref-stat{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;color:var(--text2);padding:8px 11px;background:var(--panel2);border-radius:10px;margin-bottom:8px;}
+.ref-stat b{color:var(--ac);font-size:1.05rem;font-weight:800;}
+.ref-link{font-size:.72rem;color:var(--text3);background:var(--panel2);border:1px dashed var(--border);border-radius:10px;padding:9px 11px;word-break:break-all;line-height:1.4;margin-bottom:9px;}
+.ref-btns{display:flex;gap:8px;}
+.ref-btn{flex:1;padding:11px 8px;border-radius:11px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation;}
+.ref-btn.primary{background:var(--ac);border-color:var(--ac);color:#0d0d0d;}
+.ref-btn:active{opacity:.75;}
 .sett-row{display:flex;justify-content:space-between;align-items:center;}
 .sett-toggle{
   padding:7px 22px;border-radius:20px;border:1px solid var(--border);
@@ -978,6 +987,17 @@ canvas{
           <div style="font-size:.75rem;color:var(--muted)" id="tgAccLbl">Telegram account</div>
         </div>
         <span style="font-size:1.2rem">✈️</span>
+      </div>
+    </div>
+    <!-- Referrals: your invite link, how many joined, rewards -->
+    <div class="sett-card" id="refCard" style="display:none">
+      <div class="sett-label" id="refLbl">🎁 Invite friends</div>
+      <div class="ref-hint" id="refHint">Share your link — you get 100 🪙, your friend gets 50 🪙.</div>
+      <div class="ref-stat"><span id="refCountLbl">Invited</span><b id="refCount">0</b></div>
+      <div class="ref-link" id="refLink">—</div>
+      <div class="ref-btns">
+        <button class="ref-btn primary" id="refShareBtn" type="button">📨 <span id="refShareLbl">Share</span></button>
+        <button class="ref-btn" id="refCopyBtn" type="button">🔗 <span id="refCopyLbl">Copy link</span></button>
       </div>
     </div>
     <!-- Account (email login / status) — web only, hidden in Telegram (shown by updateAcctCard) -->
@@ -2242,6 +2262,50 @@ async function showAnnouncement(){
   }catch(_){}
 }
 window.addEventListener('load',()=>setTimeout(showAnnouncement,3000));
+
+// ── Referrals: personal invite link, joined count, share/copy ───────────────
+const _REF_T={
+  en:{l:'🎁 Invite friends',h:'Share your link — you get 100 🪙, your friend gets 50 🪙.',c:'Invited',s:'Share',cp:'Copy link',ok:'Link copied!',tg:'Available in Telegram'},
+  ru:{l:'🎁 Приглашай друзей',h:'Поделись ссылкой — тебе 100 🪙, другу 50 🪙.',c:'Приглашено',s:'Поделиться',cp:'Копировать',ok:'Ссылка скопирована!',tg:'Доступно в Telegram'},
+  uk:{l:'🎁 Запрошуй друзів',h:'Поділись посиланням — тобі 100 🪙, другу 50 🪙.',c:'Запрошено',s:'Поділитись',cp:'Копіювати',ok:'Посилання скопійовано!',tg:'Доступно в Telegram'},
+  pl:{l:'🎁 Zaproś znajomych',h:'Udostępnij link — Ty dostajesz 100 🪙, znajomy 50 🪙.',c:'Zaproszeni',s:'Udostępnij',cp:'Kopiuj link',ok:'Link skopiowany!',tg:'Dostępne w Telegramie'},
+  sk:{l:'🎁 Pozvi kamarátov',h:'Zdieľaj odkaz — ty získaš 100 🪙, kamarát 50 🪙.',c:'Pozvaní',s:'Zdieľať',cp:'Kopírovať',ok:'Odkaz skopírovaný!',tg:'Dostupné v Telegrame'}
+};
+function _refLink(){
+  const pid=localStorage.getItem(S+'pid')||'';
+  const code=pid?pid.replace(/-/g,'').slice(0,8):'';
+  return code?'https://t.me/snakegameone_bot/snake?startapp=ref_'+code
+             :'https://t.me/snakegameone_bot/snake';
+}
+async function refreshRefCard(){
+  const card=document.getElementById('refCard'); if(!card) return;
+  const inTG=!!(window.Telegram?.WebApp?.initData||window.Telegram?.WebApp?.initDataUnsafe?.user);
+  const pid=localStorage.getItem(S+'pid')||'';
+  if(!inTG||!pid){ card.style.display='none'; return; }   // needs a Telegram account
+  card.style.display='';
+  const L=_REF_T[currentLang]||_REF_T.en;
+  const set=(id,txt)=>{const e=document.getElementById(id); if(e) e.textContent=txt;};
+  set('refLbl',L.l); set('refHint',L.h); set('refCountLbl',L.c);
+  set('refShareLbl',L.s); set('refCopyLbl',L.cp);
+  set('refLink',_refLink().replace('https://',''));
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/rpc/get_referral_stats',{method:'POST',headers:SB_HEADERS,
+      body:JSON.stringify({p_player_id:pid}),signal:AbortSignal.timeout?.(6000)});
+    if(r.ok){ const d=await r.json(); set('refCount',String(d&&d.invited!=null?d.invited:0)); }
+  }catch(_){}
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const sh=document.getElementById('refShareBtn'), cp=document.getElementById('refCopyBtn');
+  if(sh) sh.onclick=()=>{ try{window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light');}catch(_){}
+    if(typeof shareScore==='function') shareScore(); };
+  if(cp) cp.onclick=async()=>{
+    const L=_REF_T[currentLang]||_REF_T.en;
+    try{ await navigator.clipboard.writeText(_refLink()); }
+    catch(_){ try{const t=document.createElement('textarea');t.value=_refLink();document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();}catch(__){} }
+    try{window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');}catch(_){}
+    if(typeof showToast==='function') showToast('✅ '+L.ok,'#b5f23d',2200);
+  };
+});
 
 // ── Channel subscribe prompt ────────────────────────────────────────────────
 // Offered on every entry to Telegram players who are NOT subscribed yet.
@@ -3537,7 +3601,7 @@ function updateDiffBtns(){
     b.classList.toggle('active', b.dataset.diff===difficulty);
   });
 }
-function openSettings(){ updateDiffBtns(); updateSoundToggles(); updateLangBtns(); showScreen('settingsScreen'); }
+function openSettings(){ updateDiffBtns(); updateSoundToggles(); updateLangBtns(); refreshRefCard(); showScreen('settingsScreen'); }
 document.getElementById('btnSettings').addEventListener('click',()=>openSettings());
 document.getElementById('btnSettings').addEventListener('touchstart',e=>{e.preventDefault();openSettings();},{passive:false});
 document.getElementById('btnBackSettings').addEventListener('click',()=>showScreen('menuScreen'));
