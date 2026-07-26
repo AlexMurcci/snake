@@ -2336,12 +2336,12 @@ async function showSubscribeSheet(){
         '<path d="M20 0 L0 0 L0 20" fill="none" stroke="#b5f23d" stroke-width=".7"/>'+
       '</pattern>'+
       '<radialGradient id="subFade" cx="50%" cy="46%" r="64%">'+
-        '<stop offset="0%" stop-color="#fff" stop-opacity=".26"/>'+
+        '<stop offset="0%" stop-color="#fff" stop-opacity=".17"/>'+
         '<stop offset="100%" stop-color="#fff" stop-opacity="0"/>'+
       '</radialGradient>'+
       '<mask id="subMask"><rect width="340" height="150" fill="url(#subFade)"/></mask>'+
       '<radialGradient id="subGlow" cx="50%" cy="26%" r="66%">'+
-        '<stop offset="0%" stop-color="#b5f23d" stop-opacity=".18"/>'+
+        '<stop offset="0%" stop-color="#b5f23d" stop-opacity=".12"/>'+
         '<stop offset="100%" stop-color="#b5f23d" stop-opacity="0"/>'+
       '</radialGradient>'+
       '<linearGradient id="subBody" x1="0" y1="1" x2="1" y2="0">'+
@@ -2352,15 +2352,11 @@ async function showSubscribeSheet(){
     '</defs>'+
     '<rect width="340" height="150" fill="url(#subGrid)" mask="url(#subMask)"/>'+
     '<rect width="340" height="150" fill="url(#subGlow)"/>'+
-    '<path d="M-22,138 C34,134 62,120 100,104 C150,83 208,64 254,54 C276,49 290,47 298,46" fill="none" stroke="#000" stroke-width="19" stroke-linecap="round" opacity=".3"/>'+
-    '<path d="M-22,134 C34,130 62,116 100,100 C150,79 208,60 254,50 C276,45 290,43 298,42" fill="none" stroke="url(#subBody)" stroke-width="14" stroke-linecap="round"/>'+
-    '<circle cx="303" cy="42" r="11.5" fill="#d4ff63"/>'+
-    '<circle cx="306" cy="38.5" r="2.6" fill="#0d0d0d"/>'+
-    '<path d="M313,42 l9,-3.6 M313,42 l9,3.6" stroke="#ff5a5a" stroke-width="2.2" stroke-linecap="round" fill="none"/>'+
-    '<circle cx="44" cy="60" r="7.5" fill="#ff5a5a"/>'+
-    '<circle cx="41" cy="57" r="2.4" fill="#fff" opacity=".6"/>'+
-    '<circle cx="292" cy="112" r="5.5" fill="#f5c518"/>'+
-    '<circle cx="34" cy="106" r="3.4" fill="#b5f23d" opacity=".45"/>'+
+    '<path d="M-20,128 L54,128 L54,96 L146,96 L146,60 L242,60 L242,34 L268,34" fill="none" stroke="#b5f23d" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>'+
+    '<circle cx="274" cy="34" r="11" fill="#b5f23d"/>'+
+    '<circle cx="277" cy="30.5" r="2.5" fill="#0d0d0d"/>'+
+    '<path d="M283,34 l7.5,-3 M283,34 l7.5,3" stroke="#ff5a5a" stroke-width="2.1" stroke-linecap="round" fill="none"/>'+
+    '<circle cx="307" cy="34" r="6.5" fill="#ff5a5a"/>'+
   '</svg>';
   const card=document.createElement('div'); card.className='sub-hero-card';
   const badge=document.createElement('div'); badge.className='sub-hero-badge';
