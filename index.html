@@ -2173,6 +2173,8 @@ async function showAnnouncement(){
     const seen=Number(localStorage.getItem('snake2_ann_seen')||0);
     if(a.at && a.at<=seen) return;              // already dismissed this one
     if(document.getElementById('annOverlay')) return;
+    // The subscribe sheet owns the screen right after loading — wait it out.
+    if(document.getElementById('subOv')){ setTimeout(showAnnouncement,2500); return; }
     const ov=document.createElement('div'); ov.id='annOverlay';
     ov.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:22px;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)';
     const box=document.createElement('div');
@@ -2202,8 +2204,11 @@ const _SUB_T={
   pl:{t:'Zasubskrybuj',s:'Dołącz do społeczności — nowości, porady i nagrody',b:'Subskrybuj',l:'Może później',ok:'Dzięki za subskrypcję!'},
   sk:{t:'Odoberaj',s:'Pridaj sa ku komunite — novinky, tipy a odmeny',b:'Odoberať',l:'Možno neskôr',ok:'Ďakujeme za odber!'}
 };
-let _subShown=false;
+let _subShown=false,_subPre=null;
 function _subMark(){try{localStorage.setItem('snake2_sub_ok','1');}catch(_){}}
+// Kick the membership check off during the loading screen, so the sheet can be
+// rendered the instant loading ends instead of waiting on the network.
+function _subPrefetch(){ if(!_subPre) _subPre=_subCheck(false); return _subPre; }
 async function _subCheck(claim){
   const initData=window.Telegram?.WebApp?.initData||'';
   if(!initData) return null;
@@ -2222,9 +2227,8 @@ function _subClose(){
 async function showSubscribeSheet(){
   if(_subShown) return;
   try{ if(localStorage.getItem('snake2_sub_ok')==='1') return; }catch(_){}
-  // Let the announcement modal go first.
-  if(document.getElementById('annOverlay')){ setTimeout(showSubscribeSheet,4000); return; }
-  const d=await _subCheck(false);
+  let d=await _subPrefetch();
+  if(!d) d=await _subCheck(false);   // initData wasn't ready when we prefetched
   if(!d||!d.show){ if(d&&d.member) _subMark(); return; }
   if(document.getElementById('subOv')) return;
   _subShown=true;
@@ -2272,7 +2276,20 @@ async function showSubscribeSheet(){
   ov.appendChild(sheet); document.body.appendChild(ov);
   requestAnimationFrame(()=>ov.classList.add('on'));
 }
-window.addEventListener('load',()=>setTimeout(showSubscribeSheet,4500));
+// Show the sheet the moment the loading screen goes away — whichever code path
+// hides it (normal init, safety timeout, web login). The check is already in
+// flight by then, so the sheet lands right after the loader, like a splash.
+(function(){
+  _subPrefetch();
+  const ls=document.getElementById('loadingScreen');
+  const gone=()=>!ls||!ls.isConnected||ls.style.display==='none'||getComputedStyle(ls).display==='none';
+  const fire=()=>requestAnimationFrame(()=>setTimeout(showSubscribeSheet,140));
+  if(gone()){ fire(); return; }
+  const mo=new MutationObserver(()=>{ if(gone()){ mo.disconnect(); fire(); } });
+  mo.observe(ls,{attributes:true,attributeFilter:['style','class']});
+  // Fallback in case the loader is removed in some other way.
+  setTimeout(()=>{ if(gone()&&!_subShown){ mo.disconnect(); fire(); } },15000);
+})();
 
 function switchLbTab(tab){
   document.getElementById('tabMy').classList.toggle('active',tab==='my');
