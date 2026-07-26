@@ -87,7 +87,7 @@
 #subOv.on .sub-sheet{transform:none;}
 .sub-grab{width:42px;height:4px;border-radius:99px;background:var(--border);margin:0 auto 16px;position:relative;}
 .sub-grab::after{content:'';position:absolute;left:-40px;right:-40px;top:-14px;bottom:-14px;}
-.sub-hero{position:relative;overflow:hidden;border-radius:18px;background:#151515;border:1px solid var(--border);height:138px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;}
+.sub-hero{position:relative;overflow:hidden;border-radius:18px;background:radial-gradient(120% 100% at 50% 0%,#1c2114 0%,#141414 62%);border:1px solid var(--border);height:150px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:14px;margin-bottom:18px;}
 .sub-hero svg{position:absolute;inset:0;width:100%;height:100%;}
 .sub-hero-card{position:relative;display:flex;align-items:center;gap:12px;background:#1e1e1e;border-radius:16px;padding:9px 20px 9px 9px;box-shadow:0 10px 30px rgba(0,0,0,.45);max-width:86%;}
 .sub-hero-badge{width:46px;height:46px;border-radius:50%;background:#0d0d0d;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;overflow:hidden;}
@@ -2328,20 +2328,39 @@ async function showSubscribeSheet(){
   const sheet=document.createElement('div'); sheet.className='sub-sheet';
   const grab=document.createElement('div'); grab.className='sub-grab';
   const hero=document.createElement('div'); hero.className='sub-hero';
-  // Our own artwork: a snake crawling across the game grid, chasing food.
-  hero.innerHTML='<svg viewBox="0 0 400 138" preserveAspectRatio="xMidYMid slice" aria-hidden="true">'+
-    '<defs><pattern id="subGrid" width="19" height="19" patternUnits="userSpaceOnUse">'+
-      '<path d="M19 0 L0 0 L0 19" fill="none" stroke="#b5f23d" stroke-width=".7" opacity=".16"/>'+
-    '</pattern></defs>'+
-    '<rect width="400" height="138" fill="url(#subGrid)"/>'+
-    '<path d="M-14,112 C48,112 42,66 106,60 C150,56 168,94 214,96 C264,98 270,54 320,45" fill="none" stroke="#6f9626" stroke-width="17" stroke-linecap="round" opacity=".5"/>'+
-    '<path d="M-14,106 C48,106 42,60 106,54 C150,50 168,88 214,90 C264,92 270,48 320,39" fill="none" stroke="#b5f23d" stroke-width="13" stroke-linecap="round"/>'+
-    '<circle cx="326" cy="38" r="11.5" fill="#b5f23d"/>'+
-    '<circle cx="330" cy="34.5" r="2.6" fill="#0d0d0d"/>'+
-    '<path d="M337,39 l10,-3.5 M337,39 l10,3.5" stroke="#ff5a5a" stroke-width="2.1" stroke-linecap="round" fill="none"/>'+
-    '<circle cx="70" cy="32" r="7" fill="#ff5a5a"/>'+
-    '<circle cx="67.5" cy="29.5" r="2.2" fill="#fff" opacity=".55"/>'+
-    '<circle cx="358" cy="104" r="6" fill="#f5c518"/>'+
+  // Our own artwork: a snake arcing over the game grid toward its food. The
+  // path stays clear of the centred name plate so the whole body stays visible.
+  hero.innerHTML='<svg viewBox="0 0 340 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">'+
+    '<defs>'+
+      '<pattern id="subGrid" width="20" height="20" patternUnits="userSpaceOnUse">'+
+        '<path d="M20 0 L0 0 L0 20" fill="none" stroke="#b5f23d" stroke-width=".7"/>'+
+      '</pattern>'+
+      '<radialGradient id="subFade" cx="50%" cy="46%" r="64%">'+
+        '<stop offset="0%" stop-color="#fff" stop-opacity=".26"/>'+
+        '<stop offset="100%" stop-color="#fff" stop-opacity="0"/>'+
+      '</radialGradient>'+
+      '<mask id="subMask"><rect width="340" height="150" fill="url(#subFade)"/></mask>'+
+      '<radialGradient id="subGlow" cx="50%" cy="26%" r="66%">'+
+        '<stop offset="0%" stop-color="#b5f23d" stop-opacity=".18"/>'+
+        '<stop offset="100%" stop-color="#b5f23d" stop-opacity="0"/>'+
+      '</radialGradient>'+
+      '<linearGradient id="subBody" x1="0" y1="1" x2="1" y2="0">'+
+        '<stop offset="0%" stop-color="#7fae2a"/>'+
+        '<stop offset="55%" stop-color="#b5f23d"/>'+
+        '<stop offset="100%" stop-color="#d4ff63"/>'+
+      '</linearGradient>'+
+    '</defs>'+
+    '<rect width="340" height="150" fill="url(#subGrid)" mask="url(#subMask)"/>'+
+    '<rect width="340" height="150" fill="url(#subGlow)"/>'+
+    '<path d="M-20,126 C40,124 44,48 118,38 C178,30 228,36 266,54 C280,61 288,66 292,69" fill="none" stroke="#000" stroke-width="19" stroke-linecap="round" opacity=".3"/>'+
+    '<path d="M-20,122 C40,120 44,44 118,34 C178,26 228,32 266,50 C280,57 288,62 292,65" fill="none" stroke="url(#subBody)" stroke-width="14" stroke-linecap="round"/>'+
+    '<circle cx="298" cy="67" r="11.5" fill="#d4ff63"/>'+
+    '<circle cx="301" cy="63.5" r="2.6" fill="#0d0d0d"/>'+
+    '<path d="M308,68 l9,-3.6 M308,68 l9,3.6" stroke="#ff5a5a" stroke-width="2.2" stroke-linecap="round" fill="none"/>'+
+    '<circle cx="48" cy="46" r="7.5" fill="#ff5a5a"/>'+
+    '<circle cx="45" cy="43" r="2.4" fill="#fff" opacity=".6"/>'+
+    '<circle cx="296" cy="118" r="5.5" fill="#f5c518"/>'+
+    '<circle cx="28" cy="94" r="3.4" fill="#b5f23d" opacity=".45"/>'+
   '</svg>';
   const card=document.createElement('div'); card.className='sub-hero-card';
   const badge=document.createElement('div'); badge.className='sub-hero-badge';
