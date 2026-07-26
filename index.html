@@ -2248,11 +2248,11 @@ window.addEventListener('load',()=>setTimeout(showAnnouncement,3000));
 // Membership is verified server-side (getChatMember), so once a player is
 // subscribed the sheet never appears again.
 const _SUB_T={
-  en:{t:'Subscribe to',s:'Join our community for exclusive updates, tips and rewards',b:'Subscribe',l:'Maybe later',ok:'Thanks for subscribing!'},
-  ru:{t:'Подпишитесь на',s:'Присоединяйтесь к сообществу — новости, советы и награды',b:'Подписаться',l:'Может позже',ok:'Спасибо за подписку!'},
-  uk:{t:'Підпишіться на',s:'Приєднуйтесь до спільноти — новини, поради та нагороди',b:'Підписатися',l:'Можливо пізніше',ok:'Дякуємо за підписку!'},
-  pl:{t:'Zasubskrybuj',s:'Dołącz do społeczności — nowości, porady i nagrody',b:'Subskrybuj',l:'Może później',ok:'Dzięki za subskrypcję!'},
-  sk:{t:'Odoberaj',s:'Pridaj sa ku komunite — novinky, tipy a odmeny',b:'Odoberať',l:'Možno neskôr',ok:'Ďakujeme za odber!'}
+  en:{t:'Subscribe to',s:'Join our community for exclusive updates, tips and rewards',b:'Subscribe',l:'Maybe later',ok:'Thanks for subscribing!',chk:'Checking…'},
+  ru:{t:'Подпишитесь на',s:'Присоединяйтесь к сообществу — новости, советы и награды',b:'Подписаться',l:'Может позже',ok:'Спасибо за подписку!',chk:'Проверяем…'},
+  uk:{t:'Підпишіться на',s:'Приєднуйтесь до спільноти — новини, поради та нагороди',b:'Підписатися',l:'Можливо пізніше',ok:'Дякуємо за підписку!',chk:'Перевіряємо…'},
+  pl:{t:'Zasubskrybuj',s:'Dołącz do społeczności — nowości, porady i nagrody',b:'Subskrybuj',l:'Może później',ok:'Dzięki za subskrypcję!',chk:'Sprawdzamy…'},
+  sk:{t:'Odoberaj',s:'Pridaj sa ku komunite — novinky, tipy a odmeny',b:'Odoberať',l:'Možno neskôr',ok:'Ďakujeme za odber!',chk:'Overujeme…'}
 };
 let _subShown=false,_subPre=null;
 // No local "already subscribed" flag on purpose: the server is the source of
@@ -2311,26 +2311,38 @@ function _subClose(){
 // Swipe the sheet down (grab handle or anywhere on it) to dismiss; the backdrop
 // fades along with the drag, and a tap outside the sheet closes it too.
 function _subDrag(ov,sheet){
-  let y0=0,dy=0,drag=false,h=1;
+  let y0=0,dy=0,drag=false,h=1,armed=false,lastY=0,lastT=0,vel=0;
   const pt=e=>e.touches&&e.touches[0]?e.touches[0].clientY:e.clientY;
   const dim=k=>{ ov.style.background='rgba(0,0,0,'+(0.34*k).toFixed(3)+')'; };
+  // The sheet trails the finger and stiffens the further it is pulled, so a
+  // stray flick will not dismiss it — only a deliberate pull does.
+  const damp=d=>d<=0 ? d/6 : d/(1+d/260)*0.78;
+  const TRIP=()=>Math.min(158,Math.max(112,h*0.34));   // pull needed to dismiss
   const down=e=>{
     if(e.target.closest('button')) return;      // let the buttons work
     drag=true; y0=pt(e); dy=0; h=sheet.offsetHeight||1;
+    armed=false; lastY=y0; lastT=(e.timeStamp||Date.now()); vel=0;
     sheet.style.transition='none';
   };
   const move=e=>{
     if(!drag) return;
-    dy=pt(e)-y0;
-    if(dy<0) dy=dy/4;                            // slight resistance upwards
-    sheet.style.transform='translateY('+Math.max(dy,-24)+'px)';
-    dim(1-Math.min(Math.max(dy,0)/h,1));
+    const y=pt(e), now=(e.timeStamp||Date.now());
+    if(now>lastT){ vel=(y-lastY)/(now-lastT); lastY=y; lastT=now; }
+    dy=y-y0;
+    const off=damp(dy);
+    sheet.style.transform='translateY('+Math.max(off,-22).toFixed(1)+'px)';
+    dim(1-Math.min(Math.max(off,0)/h,1));
+    // Nudge once when the pull passes the point where releasing will close it.
+    const past=dy>TRIP();
+    if(past!==armed){ armed=past;
+      if(past){ try{window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light');}catch(_){} } }
     if(e.cancelable) e.preventDefault();
   };
   const up=()=>{
     if(!drag) return;
     drag=false; sheet.style.transition='';
-    if(dy>Math.min(120,h*0.26)){ _subClose(); }
+    const flick=vel>1.15&&dy>70;                 // fast deliberate throw
+    if(dy>TRIP()||flick){ _subClose(); }
     else { sheet.style.transform=''; ov.style.background=''; }
   };
   sheet.addEventListener('touchstart',down,{passive:true});
@@ -2401,8 +2413,11 @@ async function showSubscribeSheet(){
   '</svg>';
   const card=document.createElement('div'); card.className='sub-hero-card';
   const badge=document.createElement('div'); badge.className='sub-hero-badge';
-  if(d.avatar){ const im=document.createElement('img'); im.src=d.avatar; im.alt=''; badge.appendChild(im); }
-  else badge.textContent='🐍';
+  if(d.avatar){
+    const im=document.createElement('img'); im.alt='';
+    im.onerror=()=>{ try{im.remove();}catch(_){} badge.textContent='🐍'; };
+    im.src=d.avatar; badge.appendChild(im);
+  } else badge.textContent='🐍';
   const hNm=document.createElement('div'); hNm.className='sub-hero-nm'; hNm.textContent=name;
   card.appendChild(badge); card.appendChild(hNm); hero.appendChild(card);
   const ttl=document.createElement('div'); ttl.className='sub-ttl';
@@ -2417,11 +2432,14 @@ async function showSubscribeSheet(){
     try{ if(typeof showNotif==='function') showNotif('💚',L.ok,name); }catch(_){}
   };
   // Re-check when the player returns from Telegram; confirm silently if joined.
-  let watching=false;
+  let watching=false,checking=false;
   const onBack=async()=>{
-    if(document.visibilityState!=='visible') return;
+    if(document.visibilityState!=='visible'||checking) return;
+    checking=true; go.disabled=true; go.textContent=L.chk;
     const r=await _subCheck(true);
-    if(r&&(r.member||!r.show)){ document.removeEventListener('visibilitychange',onBack); confirmSubscribed(); }
+    checking=false;
+    if(r&&(r.member||!r.show)){ document.removeEventListener('visibilitychange',onBack); confirmSubscribed(); return; }
+    go.disabled=false; go.textContent=L.b;      // not joined yet — let them retry
   };
   go.onclick=()=>{
     try{window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('medium');}catch(_){}
