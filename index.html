@@ -2254,7 +2254,10 @@ const _SUB_T={
   sk:{t:'Odoberaj',s:'Pridaj sa ku komunite — novinky, tipy a odmeny',b:'Odoberať',l:'Možno neskôr',ok:'Ďakujeme za odber!'}
 };
 let _subShown=false,_subPre=null;
-function _subMark(){try{localStorage.setItem('snake2_sub_ok','1');}catch(_){}}
+// No local "already subscribed" flag on purpose: the server is the source of
+// truth (it short-circuits on players.subscribed_at), so changing the channel
+// in the admin panel re-checks everyone instead of being masked by a cache.
+function _subMark(){ try{ localStorage.removeItem('snake2_sub_ok'); }catch(_){} }
 // Kick the membership check off during the loading screen, so the sheet can be
 // rendered the instant loading ends instead of waiting on the network.
 function _subPrefetch(){ if(!_subPre) _subPre=_subCheck(false); return _subPre; }
@@ -2310,7 +2313,6 @@ function _subDrag(ov,sheet){
 }
 async function showSubscribeSheet(){
   if(_subShown) return;
-  try{ if(localStorage.getItem('snake2_sub_ok')==='1') return; }catch(_){}
   let d=await _subPrefetch();
   if(!d) d=await _subCheck(false);   // initData wasn't ready when we prefetched
   if(!d||!d.show){ if(d&&d.member) _subMark(); return; }
