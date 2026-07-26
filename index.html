@@ -64,6 +64,21 @@
 #acctLoginBtn:hover{border-color:var(--ac);color:var(--ac);}
 #welcAuthBtn{width:100%;padding:14px 0;background:var(--ac);border:none;border-radius:14px;color:#0d0d0d;font-size:.95rem;font-weight:800;cursor:pointer;touch-action:manipulation;font-family:inherit;margin-top:4px;}
 .acct-logout{background:transparent;border:1px solid var(--border);color:var(--text2);padding:6px 13px;border-radius:9px;font-size:.76rem;font-weight:600;cursor:pointer;}
+/* ── Channel subscribe sheet ── */
+#subOv{position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .22s;}
+#subOv.on{opacity:1;}
+.sub-sheet{width:100%;max-width:460px;background:var(--panel);border:1px solid var(--border);border-bottom:none;border-radius:24px 24px 0 0;padding:10px 20px calc(18px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1);box-shadow:0 -18px 60px rgba(0,0,0,.6);}
+#subOv.on .sub-sheet{transform:none;}
+.sub-grab{width:42px;height:4px;border-radius:99px;background:var(--border);margin:0 auto 16px;}
+.sub-hero{position:relative;overflow:hidden;border-radius:18px;background:linear-gradient(135deg,var(--ac-dim),rgba(181,242,61,.03));border:1px solid var(--border);height:128px;display:flex;align-items:center;justify-content:center;gap:13px;margin-bottom:18px;}
+.sub-hero-ic{font-size:2.5rem;line-height:1;filter:drop-shadow(0 5px 16px var(--ac-glow));}
+.sub-hero-nm{font-size:1.35rem;font-weight:900;letter-spacing:-.5px;color:var(--text);word-break:break-all;}
+.sub-ttl{font-size:1.28rem;font-weight:900;line-height:1.28;margin-bottom:9px;color:var(--text);}
+.sub-ttl span{color:var(--ac);}
+.sub-sub{font-size:.89rem;line-height:1.5;color:var(--text2);margin-bottom:20px;}
+.sub-go{width:100%;padding:16px 0;background:var(--ac);border:none;border-radius:16px;color:#0d0d0d;font-size:1rem;font-weight:800;cursor:pointer;font-family:inherit;touch-action:manipulation;}
+.sub-go:disabled{opacity:.65;cursor:default;}
+.sub-later{width:100%;margin-top:4px;padding:13px 0;background:none;border:none;color:var(--text3);font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit;touch-action:manipulation;}
 html{width:100%;height:100%;}
 body{
   width:100%;
@@ -2175,6 +2190,89 @@ async function showAnnouncement(){
   }catch(_){}
 }
 window.addEventListener('load',()=>setTimeout(showAnnouncement,3000));
+
+// ── Channel subscribe prompt ────────────────────────────────────────────────
+// Offered on every entry to Telegram players who are NOT subscribed yet.
+// Membership is verified server-side (getChatMember), so once a player is
+// subscribed the sheet never appears again.
+const _SUB_T={
+  en:{t:'Subscribe to',s:'Join our community for exclusive updates, tips and rewards',b:'Subscribe',l:'Maybe later',ok:'Thanks for subscribing!'},
+  ru:{t:'Подпишитесь на',s:'Присоединяйтесь к сообществу — новости, советы и награды',b:'Подписаться',l:'Может позже',ok:'Спасибо за подписку!'},
+  uk:{t:'Підпишіться на',s:'Приєднуйтесь до спільноти — новини, поради та нагороди',b:'Підписатися',l:'Можливо пізніше',ok:'Дякуємо за підписку!'},
+  pl:{t:'Zasubskrybuj',s:'Dołącz do społeczności — nowości, porady i nagrody',b:'Subskrybuj',l:'Może później',ok:'Dzięki za subskrypcję!'},
+  sk:{t:'Odoberaj',s:'Pridaj sa ku komunite — novinky, tipy a odmeny',b:'Odoberať',l:'Možno neskôr',ok:'Ďakujeme za odber!'}
+};
+let _subShown=false;
+function _subMark(){try{localStorage.setItem('snake2_sub_ok','1');}catch(_){}}
+async function _subCheck(claim){
+  const initData=window.Telegram?.WebApp?.initData||'';
+  if(!initData) return null;
+  try{
+    const r=await fetch(SB_URL+'/functions/v1/check-sub',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(claim?{initData,claim:true}:{initData}),
+      signal:AbortSignal.timeout?.(8000)});
+    return await r.json();
+  }catch(_){ return null; }
+}
+function _subClose(){
+  const ov=document.getElementById('subOv'); if(!ov) return;
+  ov.classList.remove('on'); setTimeout(()=>{try{ov.remove();}catch(_){}} ,300);
+}
+async function showSubscribeSheet(){
+  if(_subShown) return;
+  try{ if(localStorage.getItem('snake2_sub_ok')==='1') return; }catch(_){}
+  // Let the announcement modal go first.
+  if(document.getElementById('annOverlay')){ setTimeout(showSubscribeSheet,4000); return; }
+  const d=await _subCheck(false);
+  if(!d||!d.show){ if(d&&d.member) _subMark(); return; }
+  if(document.getElementById('subOv')) return;
+  _subShown=true;
+  const lang=(typeof currentLang!=='undefined'&&currentLang)||localStorage.getItem(S+'Lang')||'en';
+  const L=_SUB_T[lang]||_SUB_T.en;
+  const name='@'+String(d.channel||'').replace(/^@/,'');
+  const url=d.url||('https://t.me/'+String(d.channel||'').replace(/^@/,''));
+
+  const ov=document.createElement('div'); ov.id='subOv';
+  const sheet=document.createElement('div'); sheet.className='sub-sheet';
+  const grab=document.createElement('div'); grab.className='sub-grab';
+  const hero=document.createElement('div'); hero.className='sub-hero';
+  const hIc=document.createElement('div'); hIc.className='sub-hero-ic'; hIc.textContent='📣';
+  const hNm=document.createElement('div'); hNm.className='sub-hero-nm'; hNm.textContent=name;
+  hero.appendChild(hIc); hero.appendChild(hNm);
+  const ttl=document.createElement('div'); ttl.className='sub-ttl';
+  ttl.appendChild(document.createTextNode(L.t+' '));
+  const nmSpan=document.createElement('span'); nmSpan.textContent=name; ttl.appendChild(nmSpan);
+  const sub=document.createElement('div'); sub.className='sub-sub'; sub.textContent=L.s;
+  const go=document.createElement('button'); go.className='sub-go'; go.textContent=L.b;
+  const later=document.createElement('button'); later.className='sub-later'; later.textContent=L.l;
+
+  const confirmSubscribed=()=>{ _subMark(); _subClose();
+    try{window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');}catch(_){}
+    try{ if(typeof showNotif==='function') showNotif('💚',L.ok,name); }catch(_){}
+  };
+  // Re-check when the player returns from Telegram; confirm silently if joined.
+  let watching=false;
+  const onBack=async()=>{
+    if(document.visibilityState!=='visible') return;
+    const r=await _subCheck(true);
+    if(r&&(r.member||!r.show)){ document.removeEventListener('visibilitychange',onBack); confirmSubscribed(); }
+  };
+  go.onclick=()=>{
+    try{window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('medium');}catch(_){}
+    try{ window.Telegram?.WebApp?.openTelegramLink ? window.Telegram.WebApp.openTelegramLink(url) : window.open(url,'_blank'); }
+    catch(_){ window.open(url,'_blank'); }
+    if(!watching){ watching=true; document.addEventListener('visibilitychange',onBack); }
+    setTimeout(onBack,2500);
+  };
+  later.onclick=()=>{ try{window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('soft');}catch(_){} _subClose(); };
+
+  sheet.appendChild(grab); sheet.appendChild(hero); sheet.appendChild(ttl);
+  sheet.appendChild(sub); sheet.appendChild(go); sheet.appendChild(later);
+  ov.appendChild(sheet); document.body.appendChild(ov);
+  requestAnimationFrame(()=>ov.classList.add('on'));
+}
+window.addEventListener('load',()=>setTimeout(showSubscribeSheet,4500));
 
 function switchLbTab(tab){
   document.getElementById('tabMy').classList.toggle('active',tab==='my');
