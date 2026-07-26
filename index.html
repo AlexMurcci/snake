@@ -64,15 +64,28 @@
 #acctLoginBtn:hover{border-color:var(--ac);color:var(--ac);}
 #welcAuthBtn{width:100%;padding:14px 0;background:var(--ac);border:none;border-radius:14px;color:#0d0d0d;font-size:.95rem;font-weight:800;cursor:pointer;touch-action:manipulation;font-family:inherit;margin-top:4px;}
 .acct-logout{background:transparent;border:1px solid var(--border);color:var(--text2);padding:6px 13px;border-radius:9px;font-size:.76rem;font-weight:600;cursor:pointer;}
+/* ── Loading / splash screen ── */
+#loadingScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;}
+.ld-mid{display:flex;flex-direction:column;align-items:center;gap:28px;margin-top:-8vh;}
+.ld-logo{display:flex;align-items:center;gap:13px;}
+.ld-ico{font-size:2.4rem;line-height:1;filter:drop-shadow(0 6px 22px var(--ac-glow));}
+.ld-word{font-size:2.4rem;font-weight:900;letter-spacing:-1px;color:var(--text);line-height:1;}
+.ld-bar{width:min(300px,56vw);height:7px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;}
+.ld-bar i{display:block;height:100%;width:38%;border-radius:99px;background:var(--ac);box-shadow:0 0 18px var(--ac-glow);animation:ldrun 1.15s cubic-bezier(.55,0,.45,1) infinite;}
+@keyframes ldrun{0%{transform:translateX(-110%)}100%{transform:translateX(370%)}}
+.ld-foot{position:absolute;left:0;right:0;bottom:0;height:21vh;min-height:140px;background:var(--ac);clip-path:polygon(0 46%,25% 46%,25% 26%,100% 7%,100% 100%,0 100%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));}
+.ld-tag{font-size:.98rem;font-weight:800;color:#0d0d0d;text-align:center;padding:0 18px;}
 /* ── Channel subscribe sheet ── */
 #subOv{position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .22s;}
 #subOv.on{opacity:1;}
 .sub-sheet{width:100%;max-width:460px;background:var(--panel);border:1px solid var(--border);border-bottom:none;border-radius:24px 24px 0 0;padding:10px 20px calc(18px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1);box-shadow:0 -18px 60px rgba(0,0,0,.6);}
 #subOv.on .sub-sheet{transform:none;}
 .sub-grab{width:42px;height:4px;border-radius:99px;background:var(--border);margin:0 auto 16px;}
-.sub-hero{position:relative;overflow:hidden;border-radius:18px;background:linear-gradient(135deg,var(--ac-dim),rgba(181,242,61,.03));border:1px solid var(--border);height:128px;display:flex;align-items:center;justify-content:center;gap:13px;margin-bottom:18px;}
-.sub-hero-ic{font-size:2.5rem;line-height:1;filter:drop-shadow(0 5px 16px var(--ac-glow));}
-.sub-hero-nm{font-size:1.35rem;font-weight:900;letter-spacing:-.5px;color:var(--text);word-break:break-all;}
+.sub-hero{position:relative;overflow:hidden;border-radius:18px;background:#151515;border:1px solid var(--border);height:138px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;}
+.sub-hero svg{position:absolute;inset:0;width:100%;height:100%;}
+.sub-hero-card{position:relative;display:flex;align-items:center;gap:12px;background:#1e1e1e;border-radius:16px;padding:9px 20px 9px 9px;box-shadow:0 10px 30px rgba(0,0,0,.45);max-width:86%;}
+.sub-hero-badge{width:46px;height:46px;border-radius:50%;background:#0d0d0d;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;}
+.sub-hero-nm{font-size:1.32rem;font-weight:900;letter-spacing:-.5px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sub-ttl{font-size:1.28rem;font-weight:900;line-height:1.28;margin-bottom:9px;color:var(--text);}
 .sub-ttl span{color:var(--ac);}
 .sub-sub{font-size:.89rem;line-height:1.5;color:var(--text2);margin-bottom:20px;}
@@ -649,9 +662,12 @@ canvas{
   </div>
 </div>
 <!-- LOADING SCREEN -->
-<div id="loadingScreen" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
-  <div style="font-size:3rem;animation:wiggle 0.6s ease-in-out infinite;">🐍</div>
-  <div style="font-size:0.8rem;color:var(--text3);">Loading...</div>
+<div id="loadingScreen">
+  <div class="ld-mid">
+    <div class="ld-logo"><span class="ld-ico">🐍</span><span class="ld-word" id="ldWord">SNAKE</span></div>
+    <div class="ld-bar"><i></i></div>
+  </div>
+  <div class="ld-foot"><div class="ld-tag" id="ldTag">Play · Compete · Win</div></div>
 </div>
 <div id="unlockNotif"></div>
 <!-- WELCOME SCREEN (first launch) -->
@@ -1589,7 +1605,7 @@ function applyLang(){
   if(recRls[1])recRls[1].textContent=L.recLvl;
   if(recRls[2])recRls[2].textContent=L.recGames;
   const btnBkMenu=document.getElementById('btnBackMenu');if(btnBkMenu)btnBkMenu.textContent=L.btnBack;
-  const loadTxt=document.querySelector('#loadingScreen div:last-child');if(loadTxt)loadTxt.textContent=L.loading;
+  _ldPaint(currentLang);
   const kbHintEl=document.querySelector('.kb-hint');if(kbHintEl)kbHintEl.textContent=L.kbHint;
   document.querySelectorAll('#debugPanel .dbg-btn').forEach(b=>{
     const fn=b.getAttribute('onclick')||'';
@@ -1677,6 +1693,17 @@ const SKINS=[
   {emoji:'🔥',body:'#f97316',shine:'#fed7aa',glow:'#ea580c',bg:'#1a0800',foodColor:'#facc15',foodInner:'#fef9c3',obs:'#3d1800',unlockLevel:999,price:300,name:'Fire'},
   {emoji:'💎',body:'#67e8f9',shine:'#e0f2fe',glow:'#22d3ee',bg:'#001a20',foodColor:'#f472b6',foodInner:'#fbcfe8',obs:'#002a30',unlockLevel:999,price:400,name:'Diamond'},
 ];
+// Splash screen wordmark + tagline (function declaration — hoisted, so the
+// early paint below can call it before this line is reached).
+const _LD_TAG={en:'Play · Compete · Win',ru:'Играй · Соревнуйся · Побеждай',uk:'Грай · Змагайся · Перемагай',pl:'Graj · Rywalizuj · Wygrywaj',sk:'Hraj · Súťaž · Vyhrávaj'};
+function _ldPaint(lang){
+  try{
+    const w=document.getElementById('ldWord'), t=document.getElementById('ldTag');
+    const L=TRANSLATIONS[lang]||TRANSLATIONS.en;
+    if(w&&L&&L.appTitle) w.textContent=String(L.appTitle).toUpperCase();
+    if(t) t.textContent=_LD_TAG[lang]||_LD_TAG.en;
+  }catch(_){}
+}
 // ── SAVES ───────────────────────────────────────────────────────
 // Reset on version change — clears localStorage for ALL players on page reload
 if(localStorage.getItem('snakeVer')!=='2'){const _keepPid=localStorage.getItem('snake2_pid');Object.keys(localStorage).filter(k=>k.startsWith('snake')).forEach(k=>localStorage.removeItem(k));localStorage.setItem('snakeVer','2');if(_keepPid)localStorage.setItem('snake2_pid',_keepPid);}
@@ -1687,7 +1714,7 @@ if(new URLSearchParams(location.search).get('reset')==='1'){if(confirm('Reset al
 (()=>{const sp=window.Telegram?.WebApp?.initDataUnsafe?.start_param||'';if(sp.startsWith('ref_')&&!localStorage.getItem('snake2_ref_done')){localStorage.setItem('snake2_ref',sp.slice(4));}})();
 currentLang=localStorage.getItem(S+'Lang')||detectLang();
 // Translate the loading screen + <html lang> immediately for the detected language
-try{const _L=TRANSLATIONS[currentLang];document.documentElement.lang=currentLang;const _ld=document.querySelector('#loadingScreen div:last-child');if(_ld&&_L)_ld.textContent=_L.loading;}catch(e){}
+try{document.documentElement.lang=currentLang;_ldPaint(currentLang);}catch(e){}
 // ── VARIABLES (defaults; populated from Supabase on startup) ──────────
 let theme      = 'dark';
 let musicOn    = true;
@@ -2241,9 +2268,23 @@ async function showSubscribeSheet(){
   const sheet=document.createElement('div'); sheet.className='sub-sheet';
   const grab=document.createElement('div'); grab.className='sub-grab';
   const hero=document.createElement('div'); hero.className='sub-hero';
-  const hIc=document.createElement('div'); hIc.className='sub-hero-ic'; hIc.textContent='📣';
+  hero.innerHTML='<svg viewBox="0 0 400 138" preserveAspectRatio="xMidYMid slice" aria-hidden="true">'+
+    '<defs><pattern id="subDots" width="9" height="9" patternUnits="userSpaceOnUse">'+
+    '<circle cx="2" cy="2" r="1.6" fill="#b5f23d"/></pattern></defs>'+
+    '<g opacity=".6" transform="skewX(-20)">'+
+      '<rect x="150" y="12" width="66" height="15" fill="url(#subDots)"/>'+
+      '<rect x="226" y="12" width="44" height="15" fill="url(#subDots)"/>'+
+      '<rect x="160" y="33" width="118" height="15" fill="url(#subDots)"/>'+
+    '</g>'+
+    '<circle cx="356" cy="30" r="21" fill="none" stroke="#b5f23d" stroke-width="9"/>'+
+    '<path d="M26 44 L82 26 L64 80 L52 58 Z" fill="#b5f23d" opacity=".32"/>'+
+    '<path d="M4 128 C 34 88, 84 70, 126 70" fill="none" stroke="#b5f23d" stroke-width="11" stroke-linecap="round" opacity=".85"/>'+
+    '<path d="M306 86 L352 72 L340 114 L331 96 Z" fill="#b5f23d" opacity=".8"/>'+
+  '</svg>';
+  const card=document.createElement('div'); card.className='sub-hero-card';
+  const badge=document.createElement('div'); badge.className='sub-hero-badge'; badge.textContent='🐍';
   const hNm=document.createElement('div'); hNm.className='sub-hero-nm'; hNm.textContent=name;
-  hero.appendChild(hIc); hero.appendChild(hNm);
+  card.appendChild(badge); card.appendChild(hNm); hero.appendChild(card);
   const ttl=document.createElement('div'); ttl.className='sub-ttl';
   ttl.appendChild(document.createTextNode(L.t+' '));
   const nmSpan=document.createElement('span'); nmSpan.textContent=name; ttl.appendChild(nmSpan);
@@ -2283,7 +2324,7 @@ async function showSubscribeSheet(){
   _subPrefetch();
   const ls=document.getElementById('loadingScreen');
   const gone=()=>!ls||!ls.isConnected||ls.style.display==='none'||getComputedStyle(ls).display==='none';
-  const fire=()=>requestAnimationFrame(()=>setTimeout(showSubscribeSheet,140));
+  const fire=()=>requestAnimationFrame(()=>setTimeout(showSubscribeSheet,50));
   if(gone()){ fire(); return; }
   const mo=new MutationObserver(()=>{ if(gone()){ mo.disconnect(); fire(); } });
   mo.observe(ls,{attributes:true,attributeFilter:['style','class']});
