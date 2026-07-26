@@ -2280,7 +2280,7 @@ function _subCrawl(hero){
     const path=hero.querySelector('#subPath'), head=hero.querySelector('#subHead');
     if(!path||!head) return;
     const len=path.getTotalLength(); if(!len) return;
-    const body=len*0.36, DUR=8200;
+    const body=Math.min(len*0.5,200), DUR=9000;
     path.style.strokeDasharray=body+' '+(len*2);
     const place=k=>{
       const at=k*len;
@@ -2390,7 +2390,9 @@ async function showSubscribeSheet(){
     '<circle cx="297.5" cy="59.5" r="2" fill="#fff" opacity=".55"/>'+
     '<circle cx="318" cy="116" r="3.2" fill="#b5f23d" opacity=".28"/>'+
     // Diagonal run: in from the bottom left, behind the plate, out top right.
-    '<path id="subPath" d="M-42,130 C40,129 102,123 150,108 C186,97 206,70 232,46 C262,27 320,17 382,11" fill="none" stroke="#b5f23d" stroke-width="13" stroke-linecap="round"/>'+
+    // Runs on well past both edges so the snake leaves the frame completely
+    // before the loop restarts, instead of being cut off mid-body.
+    '<path id="subPath" d="M-40,130 C40,129 102,123 150,108 C186,97 206,70 232,46 C262,27 320,17 382,11 L551,-5" fill="none" stroke="#b5f23d" stroke-width="13" stroke-linecap="round"/>'+
     '<g id="subHead">'+
       '<circle cx="0" cy="0" r="11" fill="#b5f23d"/>'+
       '<circle cx="3" cy="-3.5" r="2.5" fill="#0d0d0d"/>'+
