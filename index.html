@@ -1729,12 +1729,12 @@ const SKINS=[
   {emoji:'⚡',body:'#fde047',shine:'#fefce8',glow:'#eab308',bg:'#0a0a00',foodColor:'#818cf8',foodInner:'#c7d2fe',obs:'#1a1a00',unlockLevel:30,name:'Lightning'},
   {emoji:'🟣',body:'#a78bfa',shine:'#ede9fe',glow:'#7c3aed',bg:'#0d0a1a',foodColor:'#fb923c',foodInner:'#fed7aa',obs:'#2a1a3a',unlockLevel:35,name:'Purple'},
   // Shop skins — purchased for coins
-  {emoji:'🌈',body:'#f472b6',shine:'#fbcfe8',glow:'#ec4899',bg:'#1a0a14',foodColor:'#34d399',foodInner:'#a7f3d0',obs:'#3d1a2e',unlockLevel:999,price:100,name:'Pink'},
-  {emoji:'🖤',body:'#94a3b8',shine:'#e2e8f0',glow:'#cbd5e1',bg:'#000000',foodColor:'#f59e0b',foodInner:'#fde68a',obs:'#1e293b',unlockLevel:999,price:150,name:'Dark'},
-  {emoji:'🌊',body:'#06b6d4',shine:'#cffafe',glow:'#22d3ee',bg:'#001a2e',foodColor:'#fb923c',foodInner:'#fed7aa',obs:'#0c2a3d',unlockLevel:999,price:200,name:'Ocean'},
-  {emoji:'🌙',body:'#818cf8',shine:'#c7d2fe',glow:'#6366f1',bg:'#020617',foodColor:'#f9a8d4',foodInner:'#fce7f3',obs:'#0f0a2e',unlockLevel:999,price:250,name:'Night'},
-  {emoji:'🔥',body:'#f97316',shine:'#fed7aa',glow:'#ea580c',bg:'#1a0800',foodColor:'#facc15',foodInner:'#fef9c3',obs:'#3d1800',unlockLevel:999,price:300,name:'Fire'},
-  {emoji:'💎',body:'#67e8f9',shine:'#e0f2fe',glow:'#22d3ee',bg:'#001a20',foodColor:'#f472b6',foodInner:'#fbcfe8',obs:'#002a30',unlockLevel:999,price:400,name:'Diamond'},
+  {emoji:'🌈',body:'#f472b6',shine:'#fbcfe8',glow:'#ec4899',bg:'#1a0a14',foodColor:'#34d399',foodInner:'#a7f3d0',obs:'#3d1a2e',unlockLevel:999,price:250,name:'Pink'},
+  {emoji:'🖤',body:'#94a3b8',shine:'#e2e8f0',glow:'#cbd5e1',bg:'#000000',foodColor:'#f59e0b',foodInner:'#fde68a',obs:'#1e293b',unlockLevel:999,price:400,name:'Dark'},
+  {emoji:'🌊',body:'#06b6d4',shine:'#cffafe',glow:'#22d3ee',bg:'#001a2e',foodColor:'#fb923c',foodInner:'#fed7aa',obs:'#0c2a3d',unlockLevel:999,price:600,name:'Ocean'},
+  {emoji:'🌙',body:'#818cf8',shine:'#c7d2fe',glow:'#6366f1',bg:'#020617',foodColor:'#f9a8d4',foodInner:'#fce7f3',obs:'#0f0a2e',unlockLevel:999,price:850,name:'Night'},
+  {emoji:'🔥',body:'#f97316',shine:'#fed7aa',glow:'#ea580c',bg:'#1a0800',foodColor:'#facc15',foodInner:'#fef9c3',obs:'#3d1800',unlockLevel:999,price:1200,name:'Fire'},
+  {emoji:'💎',body:'#67e8f9',shine:'#e0f2fe',glow:'#22d3ee',bg:'#001a20',foodColor:'#f472b6',foodInner:'#fbcfe8',obs:'#002a30',unlockLevel:999,price:1600,name:'Diamond'},
 ];
 // Splash screen wordmark + tagline (function declaration — hoisted, so the
 // early paint below can call it before this line is reached).
@@ -2013,13 +2013,13 @@ const QUEST_POOL=[
   {type:'combo',      icon:'🔥',title:'Combo',           make:(n)=>`Get combo ×${n}`},
 ];
 const QUEST_PARAMS={
-  eat_food:   [{n:10,coins:8},{n:25,coins:15},{n:50,coins:30}],
-  score:      [{n:50,coins:10},{n:150,coins:20},{n:300,coins:35}],
-  play_games: [{n:1,coins:5},{n:3,coins:12},{n:5,coins:20}],
-  reach_level:[{n:3,coins:8},{n:5,coins:15},{n:10,coins:30}],
-  eat_gold:   [{n:1,coins:10},{n:3,coins:20},{n:5,coins:35}],
-  use_bonus:  [{n:1,coins:8},{n:3,coins:18},{n:5,coins:30}],
-  combo:      [{n:2,coins:10},{n:3,coins:20},{n:5,coins:35}],
+  eat_food:   [{n:10,coins:5},{n:25,coins:9},{n:50,coins:18}],
+  score:      [{n:50,coins:6},{n:150,coins:12},{n:300,coins:21}],
+  play_games: [{n:1,coins:3},{n:3,coins:7},{n:5,coins:12}],
+  reach_level:[{n:3,coins:5},{n:5,coins:9},{n:10,coins:18}],
+  eat_gold:   [{n:1,coins:6},{n:3,coins:12},{n:5,coins:21}],
+  use_bonus:  [{n:1,coins:5},{n:3,coins:11},{n:5,coins:18}],
+  combo:      [{n:2,coins:6},{n:3,coins:12},{n:5,coins:21}],
 };
 function getDayKey(){
   const d=new Date();
@@ -2265,11 +2265,11 @@ window.addEventListener('load',()=>setTimeout(showAnnouncement,3000));
 
 // ── Referrals: personal invite link, joined count, share/copy ───────────────
 const _REF_T={
-  en:{l:'🎁 Invite friends',h:'Share your link — you get 100 🪙, your friend gets 50 🪙.',c:'Invited',s:'Share',cp:'Copy link',ok:'Link copied!',tg:'Available in Telegram'},
-  ru:{l:'🎁 Приглашай друзей',h:'Поделись ссылкой — тебе 100 🪙, другу 50 🪙.',c:'Приглашено',s:'Поделиться',cp:'Копировать',ok:'Ссылка скопирована!',tg:'Доступно в Telegram'},
-  uk:{l:'🎁 Запрошуй друзів',h:'Поділись посиланням — тобі 100 🪙, другу 50 🪙.',c:'Запрошено',s:'Поділитись',cp:'Копіювати',ok:'Посилання скопійовано!',tg:'Доступно в Telegram'},
-  pl:{l:'🎁 Zaproś znajomych',h:'Udostępnij link — Ty dostajesz 100 🪙, znajomy 50 🪙.',c:'Zaproszeni',s:'Udostępnij',cp:'Kopiuj link',ok:'Link skopiowany!',tg:'Dostępne w Telegramie'},
-  sk:{l:'🎁 Pozvi kamarátov',h:'Zdieľaj odkaz — ty získaš 100 🪙, kamarát 50 🪙.',c:'Pozvaní',s:'Zdieľať',cp:'Kopírovať',ok:'Odkaz skopírovaný!',tg:'Dostupné v Telegrame'}
+  en:{l:'🎁 Invite friends',h:'Share your link — you get 60 🪙, your friend gets 30 🪙.',c:'Invited',s:'Share',cp:'Copy link',ok:'Link copied!',tg:'Available in Telegram'},
+  ru:{l:'🎁 Приглашай друзей',h:'Поделись ссылкой — тебе 60 🪙, другу 30 🪙.',c:'Приглашено',s:'Поделиться',cp:'Копировать',ok:'Ссылка скопирована!',tg:'Доступно в Telegram'},
+  uk:{l:'🎁 Запрошуй друзів',h:'Поділись посиланням — тобі 60 🪙, другу 30 🪙.',c:'Запрошено',s:'Поділитись',cp:'Копіювати',ok:'Посилання скопійовано!',tg:'Доступно в Telegram'},
+  pl:{l:'🎁 Zaproś znajomych',h:'Udostępnij link — Ty dostajesz 60 🪙, znajomy 30 🪙.',c:'Zaproszeni',s:'Udostępnij',cp:'Kopiuj link',ok:'Link skopiowany!',tg:'Dostępne w Telegramie'},
+  sk:{l:'🎁 Pozvi kamarátov',h:'Zdieľaj odkaz — ty získaš 60 🪙, kamarát 30 🪙.',c:'Pozvaní',s:'Zdieľať',cp:'Kopírovať',ok:'Odkaz skopírovaný!',tg:'Dostupné v Telegrame'}
 };
 function _refLink(){
   const pid=localStorage.getItem(S+'pid')||'';
@@ -3728,6 +3728,8 @@ let awaitingStart=false; // snake awaiting first input (stationary, cannot die)
 const COMBO_WINDOW=8000; // combo window: eat next food within 8 seconds
 let eatFlash=0;     // canvas flash alpha on food eat (0..1, fades fast)
 let coinsAtGameStart=0; // snapshot of coins at game start (for "coins earned" in GO screen)
+const COINS_PER_FOOD=3; // ordinary food pays 1 coin per this many eaten
+let foodCoinTick=0;
 let comboTimer=0;        // ms until combo resets
 let sessionStartBest=0;  // best score at game start (used for "New Record!" detection)
 let obsRespawnIn=0;      // ms until obstacles respawn (Survival after bomb)
@@ -3900,6 +3902,7 @@ function startGame(){
     score=0;totalFood=0;
     sessionStartBest=best; // snapshot best only at the start of a new game
     coinsAtGameStart=coins; // snapshot for "coins earned this game" display
+    foodCoinTick=0;
   }
   _levelTransition=false;_carryScore=0;_carryTotalFood=0;
   totalLen=BASE_LEN;levelScore=0;particles=[];floatTexts=[];skinTrailFx=[];
@@ -3997,7 +4000,9 @@ function loop(ts){
     const pts = basePts + comboBonus; // base + combo bonus
     score+=pts; levelScore++; totalFood++;
     if(score>best){best=score;bestHud.textContent=best;}
-    coins+=1; // 1 coin per food
+    // Coins are no longer handed out for every bite: ordinary food fills a
+    // counter and pays 1 coin on every COINS_PER_FOOD-th one.
+    if(++foodCoinTick>=COINS_PER_FOOD){ foodCoinTick=0; coins+=1; }
     window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light');
     totalLen+=LEN_PER_FOOD;
     scoreEl.textContent=score;
